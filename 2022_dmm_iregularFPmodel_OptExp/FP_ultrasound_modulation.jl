@@ -32,6 +32,12 @@ function int(λ, fp::MultilayerStructure)
     return intensity(fieldt)
 end
 
+γ = 97.2E9 # Pa
+P = 100E3 # Pa
+c = 5570 # m/s
+f = 1E6 # Hz
+θ = π / 4 # rad
+
 λ = 1554.3E-9:.005e-9:1554.4e-9
 itf_mls = map(λi -> int(λi, fp_mls), λ)
 
@@ -45,8 +51,8 @@ us_phase = range(0, 2π, length = 100)
 modulation = zeros(length(us_phase))
 
 for i_phase in eachindex(modulation)
-    sound_modulation_mirror1(x,y) = 1E-10 * cos(2π / 2E-3 * x + us_phase[i_phase])
-    sound_modulation_mirror2(x,y) = -1E-10 * cos(2π / 2E-3 * x + us_phase[i_phase])
+    sound_modulation_mirror1(x,y) = P / γ * h_cav * cos(2π * cos(θ) * f / c * x + us_phase[i_phase])
+    sound_modulation_mirror2(x,y) = -P / γ * h_cav * cos(2π * cos(θ) * f / c * x + us_phase[i_phase])
 
     fp_modulated = [map(i -> RoughMultilayerStructure([n[i], n[i+1]], zeros(0), [sound_modulation_mirror1], ReferenceFrame(0,0, h[i])), 1:11); map(i -> RoughMultilayerStructure([n[i], n[i+1]], zeros(0), [sound_modulation_mirror2], ReferenceFrame(0,0, h[i])), 12:length(h))]; 
 
