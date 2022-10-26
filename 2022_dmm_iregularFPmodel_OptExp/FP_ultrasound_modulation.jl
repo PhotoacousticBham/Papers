@@ -51,8 +51,15 @@ us_phase = range(0, 2π, length = 100)
 modulation = zeros(length(us_phase))
 
 for i_phase in eachindex(modulation)
-    sound_modulation_mirror1(x,y) = P / γ * h_cav * cos(2π * cos(θ) * f / c * x + us_phase[i_phase])
-    sound_modulation_mirror2(x,y) = -P / γ * h_cav * cos(2π * cos(θ) * f / c * x + us_phase[i_phase])
+    m_d(x,y) = P / γ * h_cav * cos(2π * cos(θ) * f / c * x + us_phase[i_phase]) * exp(-4(x^2 + y^2) / (70E-6)^2)
+    norm_d(x,y) = exp(-4(x^2 + y^2) / (70E-6)^2)
+    m = mapreduce(m_d, +, range(-140E-6, 140E-6, length = 5000), range(-140E-6, 140E-6, length = 5000)') / mapreduce(norm_d, +, range(-140E-6, 140E-6, length = 5000), range(-140E-6, 140E-6, length = 5000)')
+
+    sound_modulation_mirror1(x,y) = P / γ * h_cav * cos(2π * cos(θ) * f / c * x + us_phase[i_phase]) - m
+    sound_modulation_mirror2(x,y) = -P / γ * h_cav * cos(2π * cos(θ) * f / c * x + us_phase[i_phase]) + m
+
+    h = [0; repeat([h_zns, h_cryo], 5); h_cav - 2m; repeat([h_zns, h_cryo], 5)]
+    h = cumsum(h)
 
     fp_modulated = [map(i -> RoughMultilayerStructure([n[i], n[i+1]], zeros(0), [sound_modulation_mirror1], ReferenceFrame(0,0, h[i])), 1:11); map(i -> RoughMultilayerStructure([n[i], n[i+1]], zeros(0), [sound_modulation_mirror2], ReferenceFrame(0,0, h[i])), 12:length(h))]; 
 
