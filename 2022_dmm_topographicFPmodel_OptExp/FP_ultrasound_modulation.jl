@@ -39,21 +39,22 @@ f = 1E6 # Hz
 θ = π / 4 # rad
 
 λ = 1554.3E-9:.005e-9:1554.4e-9
-itf_mls = map(λi -> int(λi, fp_mls), λ)
+# itf_mls = map(λi -> int(λi, fp_mls), λ)
 
-(val, arg) = findmax(abs, diff(itf_mls))
-λ_bias = (λ[arg+1] + λ[arg]) / 2
+# (val, arg) = findmax(abs, diff(itf_mls))
+# λ_bias = (λ[arg+1] + λ[arg]) / 2
 
-i_bias = int(λ_bias, fp_mls_vec)
-trunc_error = i_bias - int(λ_bias, fp_mls)
+# i_bias = int(λ_bias, fp_mls_vec)
+# trunc_error = i_bias - int(λ_bias, fp_mls)
 
 us_phase = range(0, 2π, length = 100)
 modulation = zeros(length(us_phase))
-
+m = zeros(length(us_phase))
 for i_phase in eachindex(modulation)
     m_d(x,y) = P / γ * h_cav * cos(2π * cos(θ) * f / c * x + us_phase[i_phase]) * exp(-4(x^2 + y^2) / (70E-6)^2)
     norm_d(x,y) = exp(-4(x^2 + y^2) / (70E-6)^2)
-    m = mapreduce(m_d, +, range(-140E-6, 140E-6, length = 5000), range(-140E-6, 140E-6, length = 5000)') / mapreduce(norm_d, +, range(-140E-6, 140E-6, length = 5000), range(-140E-6, 140E-6, length = 5000)')
+    m[i_phase] = mapreduce(m_d, +, range(-140E-6, 140E-6, length = 5000), range(-140E-6, 140E-6, length = 5000)') / mapreduce(norm_d, +, range(-140E-6, 140E-6, length = 5000), range(-140E-6, 140E-6, length = 5000)')
+    continue
 
     sound_modulation_mirror1(x,y) = P / γ * h_cav * cos(2π * cos(θ) * f / c * x + us_phase[i_phase]) - m
     sound_modulation_mirror2(x,y) = -P / γ * h_cav * cos(2π * cos(θ) * f / c * x + us_phase[i_phase]) + m
